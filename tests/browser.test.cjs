@@ -6,12 +6,14 @@ const path = require('node:path');
 const http = require('node:http');
 
 test('ranking persists; backups restore safely; mobile and keyboard controls work', async () => {
-  assert.ok(fs.existsSync('index.html'), 'browser app is missing');
+  assert.ok(fs.existsSync('sleeping-with-sirens/index.html'), 'browser app is missing');
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE || '@playwright/test');
   const server = http.createServer((req, res) => {
     const pathname = new URL(req.url, 'http://localhost').pathname;
-    const file = path.join(process.cwd(), pathname.endsWith('/') ? 'index.html' : path.basename(pathname));
+    const relative = decodeURIComponent(pathname).replace(/^\/sws_tierlist\/?/, '');
+    const file = path.resolve(process.cwd(), relative.endsWith('/') || !relative ? path.join(relative, 'index.html') : relative);
     try {
+      if (!file.startsWith(process.cwd())) throw new Error('Invalid path');
       const content = fs.readFileSync(file);
       res.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html');
       res.end(content);
@@ -23,8 +25,11 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    const url = `http://127.0.0.1:${server.address().port}/sws_tierlist/`;
-    await page.goto(url);
+    const rootUrl = `http://127.0.0.1:${server.address().port}/sws_tierlist/`;
+    const url = `${rootUrl}sleeping-with-sirens/`;
+    await page.goto(rootUrl);
+    await page.getByRole('link', { name: /Sleeping With Sirens/ }).click();
+    assert.equal(page.url(), url);
     await page.getByLabel('Tier list name').fill('Weekend ranking');
     await page.getByRole('button', { name: 'Add songs', exact: true }).click();
     await page.getByLabel('Song titles').fill('First track\nSecond track\nThird track');
@@ -127,7 +132,7 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     await deniedPage.getByRole('button', { name: 'Export JSON' }).click();
     assert.ok(await fallback);
     const localPage = await browser.newPage();
-    await localPage.goto(require('node:url').pathToFileURL(path.resolve('index.html')).href);
+    await localPage.goto(require('node:url').pathToFileURL(path.resolve('sleeping-with-sirens/index.html')).href);
     assert.equal(await localPage.locator('.tier-row').count(), 6);
     await localPage.getByRole('button', { name: 'Add songs', exact: true }).click();
     await localPage.getByLabel('Song titles').fill('Local file track');

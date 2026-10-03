@@ -4,51 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#131515">
-  <meta name="description" content="Tierlists for ranking songs and saving your results, featuring Sleeping With Sirens.">
-  <title>Tierlists · Sleeping With Sirens</title>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="catalog.js"></script>
-  <script defer src="state.js"></script>
-  <script defer src="app.js"></script>
+  <meta name="description" content="Choose a tier list and start ranking.">
+  <title>Tierlists</title>
+  <link rel="stylesheet" href="home.css">
 </head>
 <body>
-  <header class="masthead">
-    <a class="wordmark" href="./" aria-label="Tierlists home">Tierlists</a>
-  </header>
+  <header class="masthead"><a class="wordmark" href="./" aria-label="Tierlists home">Tierlists</a></header>
   <main>
-    <section class="intro" aria-labelledby="page-title">
-      <div><h1 id="page-title">Sleeping<br>With Sirens<span class="title-dot">.</span></h1></div>
-      <div class="intro-aside"><div id="progress-text">0 of 0 songs ranked</div><progress id="progress" value="0" max="1" aria-label="Songs ranked"></progress></div>
+    <section class="hero" aria-labelledby="page-title">
+      <h1 id="page-title">Tierlists<span>.</span></h1>
+      <p>Choose a list to start ranking.</p>
     </section>
-    <section aria-labelledby="board-title">
-      <div class="section-heading"><h2 id="board-title">Your ranking</h2></div>
-      <div class="toolbar"><div class="toolbar-group"><label class="sr-only" for="list-name">Tier list name</label><input id="list-name" class="list-name" maxlength="100" placeholder="Name this tier list"><button id="export" class="primary">Export JSON</button><button id="import">Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="compare-toggle">Compare list</button><button id="compare-clear" class="quiet" hidden>Clear comparison</button><button id="add-toggle">Add songs</button></div><button id="reset" class="quiet">Reset rankings</button></div>
-      <p id="message" class="message" role="status" hidden></p>
-      <div id="recovery" class="recovery" hidden><p>Some previous save data could not be read. The full song library has been restored, along with any rankings that could be recovered.</p><button id="download-old">Download previous save</button><button id="replace-old">Dismiss</button></div>
-      <dialog id="compare-dialog" class="compare-dialog">
-        <form id="compare-form">
-          <div class="form-heading"><div><h3>Compare with a saved list</h3><p>Your current tier list will stay open.</p></div><button id="compare-close" type="button" class="quiet">Close</button></div>
-          <label for="compare-file">Saved tier list</label><input id="compare-file" type="file" accept=".json,application/json" required>
-          <p id="compare-error" role="alert" class="form-error" hidden></p>
-          <button type="submit" class="primary">Show comparison</button>
-        </form>
-      </dialog>
-      <form id="add-form" class="add-form" hidden>
-        <div class="form-heading"><h3>Add to your library</h3><button id="add-close" type="button" class="quiet">Close</button></div>
-        <p>Paste one song title per line. Add an album at a time, or paste your whole list.</p>
-        <label for="song-titles">Song titles</label><textarea id="song-titles" rows="5" maxlength="1505000" required placeholder="One song title per line"></textarea>
-        <div class="form-grid"><div><label for="song-album">Album or release</label><input id="song-album" maxlength="300" placeholder="Optional"></div><div><label for="song-type">Recording type</label><select id="song-type"><option value="studio">Studio</option><option value="acoustic">Acoustic</option><option value="live">Live</option><option value="single">Single</option><option value="cover">Cover</option><option value="custom">Other</option></select></div></div>
-        <p id="add-error" role="alert" class="form-error" hidden></p><button type="submit" class="primary">Save songs</button>
-      </form>
-      <div id="board" class="board" aria-label="Ranked songs"></div>
-    </section>
-    <section id="library" aria-labelledby="library-title">
-      <div class="section-heading"><div class="library-heading"><h2 id="library-title">Unranked</h2><span id="pool-count" class="count">0</span></div></div>
-      <div class="filters"><div class="search-field"><label class="sr-only" for="search">Search songs</label><input id="search" type="search" placeholder="Search a song or album…" autocomplete="off"></div><div><label class="sr-only" for="album">Filter by album</label><select id="album"><option value="">All albums</option></select></div><button id="clear-filters" class="quiet">Clear filters</button></div>
-      <div id="pool" class="pool" data-tier="unranked"></div>
-      <p id="pool-empty" class="pool-empty"></p>
+    <section class="tierlist-grid" aria-label="Available tier lists">
+      <a class="tierlist-card" href="sleeping-with-sirens/">
+        <div class="card-mark" aria-hidden="true">SWS</div>
+        <div>
+          <h2>Sleeping With Sirens</h2>
+          <p>Rank 104 songs across the full catalog.</p>
+        </div>
+        <span class="card-arrow" aria-hidden="true">→</span>
+      </a>
     </section>
   </main>
-  <noscript><p>This tier list needs JavaScript enabled to rank and save songs.</p></noscript>
 </body>
 </html>

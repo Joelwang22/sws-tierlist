@@ -1,6 +1,8 @@
 # Tierlists
 
-A static tier-list site with Sleeping With Sirens as its first provided list. Open `index.html` to start, or host it on GitHub Pages. No install, build, account, or server is needed for the site.
+A static tier-list directory with Sleeping With Sirens as its first provided list. Open `index.html` to see the directory, then choose a tier list. No install, build, account, or server is needed for the site.
+
+Each tier list has its own folder. The Sleeping With Sirens list lives at `sleeping-with-sirens/index.html`, leaving the root page available for future lists.
 
 ## Add and rank songs
 
@@ -28,7 +30,7 @@ Imports must be version 1 save files, under 5 MB, with at most 5,000 songs. Libr
 
 ## Publish on GitHub Pages
 
-1. Create a GitHub repository and upload this folder's files. Keep `index.html`, `styles.css`, `catalog.js`, `state.js`, `app.js`, and `.nojekyll` at the repository root.
+1. Create a GitHub repository and upload this folder's files. Keep the root files and `sleeping-with-sirens` directory together so their relative paths continue to work.
 2. Open the repository's **Settings → Pages**.
 3. Set the source to **Deploy from a branch**, choose **main**, select **/ (root)**, and save.
 4. Open the Pages URL shown by GitHub after deployment.
