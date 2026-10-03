@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#131515">
-  <meta name="description" content="Your personal Sleeping With Sirens song tier list. Rank songs, save your progress, and keep JSON backups.">
-  <title>Sleeping With Sirens · Song tier list</title>
+  <meta name="description" content="Tierlists for ranking songs and saving your results, featuring Sleeping With Sirens.">
+  <title>Tierlists · Sleeping With Sirens</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="catalog.js"></script>
   <script defer src="state.js"></script>
@@ -13,8 +13,7 @@
 </head>
 <body>
   <header class="masthead">
-    <a class="wordmark" href="./" aria-label="Sleeping With Sirens tier list home">SWS<span> / YOUR SONG TIER LIST</span></a>
-    <a class="quiet-link" href="#library">Go to song library</a>
+    <a class="wordmark" href="./" aria-label="Tierlists home">Tierlists</a>
   </header>
   <main>
     <section class="intro" aria-labelledby="page-title">
@@ -36,7 +35,7 @@
       <div id="board" class="board" aria-label="Ranked songs"></div>
     </section>
     <section id="library" aria-labelledby="library-title">
-      <div class="section-heading"><div class="library-heading"><h2 id="library-title">Waiting for a listen</h2><span id="pool-count" class="count">0</span></div><span class="library-note">Your unranked song library</span></div>
+      <div class="section-heading"><div class="library-heading"><h2 id="library-title">Unranked</h2><span id="pool-count" class="count">0</span></div></div>
       <div class="filters"><div class="search-field"><label class="sr-only" for="search">Search songs</label><input id="search" type="search" placeholder="Search a song or album…" autocomplete="off"></div><div><label class="sr-only" for="album">Filter by album</label><select id="album"><option value="">All albums</option></select></div><button id="clear-filters" class="quiet">Clear filters</button></div>
       <div id="pool" class="pool" data-tier="unranked"></div>
       <p id="pool-empty" class="pool-empty"></p>

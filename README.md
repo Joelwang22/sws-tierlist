@@ -1,6 +1,6 @@
-# Sleeping With Sirens song tier list
+# Tierlists
 
-A static personal tier list. Open `index.html` to start, or host it on GitHub Pages. No install, build, account, or server is needed for the site.
+A static tier-list site with Sleeping With Sirens as its first provided list. Open `index.html` to start, or host it on GitHub Pages. No install, build, account, or server is needed for the site.
 
 ## Add and rank songs
 
