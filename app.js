@@ -2,6 +2,7 @@
   'use strict';
   const api = SWS.state;
   const KEY = 'sws-tierlist-v1';
+  const RECOVERY_KEY = `${KEY}-recovery-backup`;
   const MAX_BYTES = 5 * 1024 * 1024;
   const $ = id => document.getElementById(id);
   const labels = { S: 'On repeat', A: 'Love it', B: 'Solid', C: 'Sometimes', D: 'Rarely', F: 'Skip' };
@@ -24,7 +25,6 @@
     status.parentElement.classList.toggle('warning', warning);
   }
   function persist() {
-    if (protectedSave !== null) { saveStatus('Autosave paused. Export a backup.', true); return; }
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
       storageAvailable = true;
@@ -36,7 +36,11 @@
   }
   function restore() {
     let raw;
-    try { raw = localStorage.getItem(KEY); }
+    try {
+      raw = localStorage.getItem(KEY);
+      protectedSave = localStorage.getItem(RECOVERY_KEY);
+      if (protectedSave !== null) $('recovery').hidden = false;
+    }
     catch { storageAvailable = false; saveStatus('Browser saving unavailable. Export JSON.', true); return; }
     if (raw === null) { saveStatus('Autosave ready', false); return; }
     try {
@@ -45,8 +49,13 @@
       persist();
     } catch {
       protectedSave = raw;
+      let previous;
+      try { previous = JSON.parse(raw); } catch { previous = null; }
+      state = api.recoverState(previous, SWS.catalog, SWS.retiredCatalogIds);
       $('recovery').hidden = false;
-      saveStatus('Autosave paused. Previous save unreadable.', true);
+      try { localStorage.setItem(RECOVERY_KEY, raw); } catch { /* The download button still keeps the original available this session. */ }
+      persist();
+      saveStatus('Library recovered', true);
     }
   }
   function download(content, filename) {
@@ -321,11 +330,10 @@
   });
   $('download-old').addEventListener('click', () => download(protectedSave || '', 'sws-unreadable-save.json'));
   $('replace-old').addEventListener('click', () => {
-    if (!confirm('Replace the unreadable browser save with your current list? Download the previous save first if you want to keep it.')) return;
     protectedSave = null;
+    try { localStorage.removeItem(RECOVERY_KEY); } catch { /* Storage may be unavailable. */ }
     $('recovery').hidden = true;
-    persist();
-    announce(storageAvailable ? 'Browser saving resumed.' : 'Browser saving is still unavailable. Export a JSON backup.', !storageAvailable);
+    announce('Recovery notice dismissed.');
   });
   $('search').addEventListener('input', () => renderPool());
   $('album').addEventListener('change', () => renderPool());

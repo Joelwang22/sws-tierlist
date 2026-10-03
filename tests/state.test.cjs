@@ -45,6 +45,20 @@ test('catalog upgrades remove retired recording variants', () => {
   assert.equal(s.songs.some(song => song.id === 'old-live'), false);
   assert.equal(s.tiers.A.includes('old-live'), false);
 });
+
+test('recovery restores the catalog and keeps recognizable rankings from an invalid save', () => {
+  const item = id => ({ id, title: id, album: 'Test', year: 2010, type: 'studio' });
+  const recoveryCatalog = [item('one'), item('two')];
+  const broken = {
+    version: 1,
+    songs: [item('one'), item('retired'), { id: 'bad' }],
+    tiers: { S: ['one', 'missing'], A: [], B: [], C: [], D: [], F: [], unranked: ['retired'] }
+  };
+  const recovered = api.recoverState(broken, recoveryCatalog, ['retired']);
+  assert.deepEqual(recovered.songs.map(item => item.id), ['one', 'two']);
+  assert.deepEqual(recovered.tiers.S, ['one']);
+  assert.deepEqual(recovered.tiers.unranked, ['two']);
+});
 test('rejects a library whose backup would exceed the import byte limit', () => {
   const large = Array.from({ length: 3000 }, (_, i) => ({ id: 'large-' + i, title: '曲'.repeat(300), album: '曲'.repeat(300), year: 2026, type: 'custom' }));
   assert.throws(() => api.createState(large), /5 MB/i);

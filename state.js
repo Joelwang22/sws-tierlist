@@ -78,8 +78,41 @@
     }
     return validateState(next);
   }
+  function recoverState(value, catalog, retiredIds = []) {
+    const verified = createState(catalog);
+    if (!isObject(value)) return verified;
+    const retired = new Set(retiredIds);
+    const songs = verified.songs.slice();
+    const ids = new Set(songs.map(song => song.id));
+    if (Array.isArray(value.songs)) for (const song of value.songs) {
+      try {
+        if (!isObject(song) || retired.has(song.id) || ids.has(song.id)) continue;
+        const clean = {
+          id: text(song.id, 'Song ID', 150),
+          title: text(song.title, 'Song title'),
+          album: text(song.album, 'Album'),
+          year: song.year,
+          type: song.type
+        };
+        if (!Number.isInteger(clean.year) || clean.year < 1900 || clean.year > 2100 || !types.includes(clean.type)) continue;
+        songs.push(clean);
+        ids.add(clean.id);
+      } catch { /* Skip malformed custom entries while recovering the rest. */ }
+    }
+    const placements = Object.fromEntries(tiers.map(tier => [tier, []]));
+    const seen = new Set();
+    if (isObject(value.tiers)) for (const tier of tiers) {
+      if (!Array.isArray(value.tiers[tier])) continue;
+      for (const id of value.tiers[tier]) if (ids.has(id) && !retired.has(id) && !seen.has(id)) {
+        placements[tier].push(id);
+        seen.add(id);
+      }
+    }
+    for (const song of songs) if (!seen.has(song.id)) placements.unranked.push(song.id);
+    return validateState({ version: 1, songs, tiers: placements });
+  }
   function resetRanks(save) { return createState(validateState(save).songs); }
-  const api = { tiers, createState, validateState, moveSong, addSong, mergeCatalog, resetRanks };
+  const api = { tiers, createState, validateState, moveSong, addSong, mergeCatalog, recoverState, resetRanks };
   root.SWS = root.SWS || {};
   root.SWS.state = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

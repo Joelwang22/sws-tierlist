@@ -98,12 +98,14 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     const corrupt = '{bad-json';
     await page.evaluate(value => localStorage.setItem('sws-tierlist-v1', value), corrupt);
     await page.reload();
+    assert.ok(await page.locator('#pool .song').count() > 0);
+    assert.notEqual(await page.evaluate(() => localStorage.getItem('sws-tierlist-v1')), corrupt);
     await page.getByRole('button', { name: 'Add songs', exact: true }).click();
     await page.getByLabel('Song titles').fill('Recovery track');
     await page.getByRole('button', { name: 'Save songs', exact: true }).click();
     await page.locator('#pool .song').first().click();
     await page.locator('[data-tier="A"] .tier-label').click();
-    assert.equal(await page.evaluate(() => localStorage.getItem('sws-tierlist-v1')), corrupt);
+    assert.notEqual(await page.evaluate(() => localStorage.getItem('sws-tierlist-v1')), corrupt);
     assert.equal(await page.locator('.song select').count(), 0);
     const deniedPage = await browser.newPage();
     await deniedPage.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new Error('Denied'); } }));
