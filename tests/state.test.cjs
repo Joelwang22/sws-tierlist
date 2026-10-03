@@ -59,6 +59,22 @@ test('recovery restores the catalog and keeps recognizable rankings from an inva
   assert.deepEqual(recovered.tiers.S, ['one']);
   assert.deepEqual(recovered.tiers.unranked, ['two']);
 });
+test('named saves keep their name and compare tier changes', () => {
+  let left = api.createState(catalog);
+  left.name = 'First pass';
+  left = api.moveSong(left, 'one', 'S');
+  let right = api.createState(catalog);
+  right.name = 'Second pass';
+  right = api.moveSong(right, 'one', 'A');
+  right = api.moveSong(right, 'two', 'S');
+  const result = api.compareStates(left, right);
+  assert.equal(result.leftName, 'First pass');
+  assert.equal(result.rightName, 'Second pass');
+  assert.equal(result.summary.moved, 2);
+  assert.equal(result.summary.same, 1);
+  assert.equal(result.rows.find(row => row.id === 'one').rightTier, 'A');
+  assert.equal(api.resetRanks(left).name, 'First pass');
+});
 test('rejects a library whose backup would exceed the import byte limit', () => {
   const large = Array.from({ length: 3000 }, (_, i) => ({ id: 'large-' + i, title: '曲'.repeat(300), album: '曲'.repeat(300), year: 2026, type: 'custom' }));
   assert.throws(() => api.createState(large), /5 MB/i);

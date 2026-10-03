@@ -35,6 +35,7 @@
     }
     if (seen.size !== ids.size) fail('Some songs are missing from the tiers.');
     const clean = { version: 1, songs, tiers: placements };
+    if (value.name !== undefined) clean.name = text(value.name, 'List name', 100);
     // Reserve room for an export timestamp so every accepted state is portable.
     if (new TextEncoder().encode(JSON.stringify(clean)).length > 5 * 1024 * 1024 - 256) fail('This library would exceed the 5 MB backup limit. Use fewer songs or shorter titles.');
     if (value.exportedAt !== undefined) {
@@ -109,10 +110,38 @@
       }
     }
     for (const song of songs) if (!seen.has(song.id)) placements.unranked.push(song.id);
-    return validateState({ version: 1, songs, tiers: placements });
+    const recovered = { version: 1, songs, tiers: placements };
+    if (typeof value.name === 'string' && value.name.trim() && value.name.length <= 100) recovered.name = value.name;
+    return validateState(recovered);
   }
-  function resetRanks(save) { return createState(validateState(save).songs); }
-  const api = { tiers, createState, validateState, moveSong, addSong, mergeCatalog, recoverState, resetRanks };
+  function resetRanks(save) {
+    const current = validateState(save);
+    const reset = createState(current.songs);
+    if (current.name) reset.name = current.name;
+    return reset;
+  }
+  function compareStates(leftValue, rightValue) {
+    const left = validateState(leftValue);
+    const right = validateState(rightValue);
+    const placement = save => new Map(tiers.flatMap(tier => save.tiers[tier].map(id => [id, tier])));
+    const leftPlacement = placement(left);
+    const rightPlacement = placement(right);
+    const songs = new Map([...left.songs, ...right.songs].map(song => [song.id, song]));
+    const rows = [...songs.values()].map(song => {
+      const leftTier = leftPlacement.get(song.id) || null;
+      const rightTier = rightPlacement.get(song.id) || null;
+      const status = !leftTier ? 'right-only' : !rightTier ? 'left-only' : leftTier === rightTier ? 'same' : 'moved';
+      return { id: song.id, title: song.title, album: song.album, leftTier, rightTier, status };
+    }).sort((a, b) => (a.status === 'same') - (b.status === 'same') || a.title.localeCompare(b.title));
+    const summary = { same: 0, moved: 0, leftOnly: 0, rightOnly: 0 };
+    for (const row of rows) {
+      if (row.status === 'left-only') summary.leftOnly += 1;
+      else if (row.status === 'right-only') summary.rightOnly += 1;
+      else summary[row.status] += 1;
+    }
+    return { leftName: left.name || 'List 1', rightName: right.name || 'List 2', summary, rows };
+  }
+  const api = { tiers, createState, validateState, moveSong, addSong, mergeCatalog, recoverState, resetRanks, compareStates };
   root.SWS = root.SWS || {};
   root.SWS.state = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

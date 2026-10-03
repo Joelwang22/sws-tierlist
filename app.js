@@ -218,6 +218,7 @@
     $('progress').max = total || 1;
     $('progress').value = ranked;
     $('reset').disabled = ranked === 0;
+    if (document.activeElement !== $('list-name')) $('list-name').value = state.name || '';
   }
   function renderPool(byId = new Map(state.songs.map(s => [s.id, s]))) {
     const query = $('search').value.trim().toLocaleLowerCase();
@@ -267,10 +268,78 @@
       $('add-error').hidden = false;
     }
   });
+  $('list-name').addEventListener('change', () => {
+    const name = $('list-name').value.trim();
+    const next = { ...state };
+    if (name) next.name = name;
+    else delete next.name;
+    state = api.validateState(next);
+    persist();
+    $('list-name').value = name;
+  });
   $('export').addEventListener('click', () => {
-    const save = { ...api.validateState(state), exportedAt: new Date().toISOString() };
-    download(JSON.stringify(save), `sws-tierlist-${new Date().toISOString().slice(0, 10)}.json`);
-    announce('JSON backup exported. Keep it somewhere safe.');
+    const enteredName = $('list-name').value.trim();
+    const next = { ...state };
+    if (enteredName) next.name = enteredName;
+    else delete next.name;
+    state = api.validateState(next);
+    persist();
+    const save = { ...state, exportedAt: new Date().toISOString() };
+    const base = (save.name || 'sleeping-with-sirens').normalize('NFKD').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'tier-list';
+    download(JSON.stringify(save), `${base}-${new Date().toISOString().slice(0, 10)}.json`);
+    announce(`${save.name || 'Tier list'} exported.`);
+  });
+  function openCompare() { $('compare-form').hidden = false; $('compare-left').focus(); }
+  $('compare-toggle').addEventListener('click', openCompare);
+  $('compare-close').addEventListener('click', () => {
+    $('compare-form').hidden = true;
+    $('compare-toggle').focus();
+  });
+  function tierText(tier) { return tier === 'unranked' ? 'Unranked' : tier || 'Not included'; }
+  function renderComparison(result, leftFile, rightFile) {
+    const leftName = result.leftName === 'List 1' ? leftFile.name.replace(/\.json$/i, '') : result.leftName;
+    const rightName = result.rightName === 'List 2' ? rightFile.name.replace(/\.json$/i, '') : result.rightName;
+    const container = $('comparison');
+    container.replaceChildren();
+    const summary = document.createElement('div');
+    summary.className = 'comparison-summary';
+    for (const text of [`${result.summary.moved} moved`, `${result.summary.same} unchanged`, `${result.summary.leftOnly} only in ${leftName}`, `${result.summary.rightOnly} only in ${rightName}`]) {
+      const item = document.createElement('span'); item.textContent = text; summary.append(item);
+    }
+    const wrap = document.createElement('div'); wrap.className = 'comparison-table-wrap';
+    const table = document.createElement('table');
+    const head = document.createElement('thead');
+    const header = document.createElement('tr');
+    for (const text of ['Song', leftName, rightName]) { const th = document.createElement('th'); th.textContent = text; header.append(th); }
+    head.append(header);
+    const body = document.createElement('tbody');
+    for (const row of result.rows) {
+      const tr = document.createElement('tr');
+      if (row.status !== 'same') tr.className = 'changed';
+      const song = document.createElement('td'); song.textContent = row.title;
+      const left = document.createElement('td'); const leftChip = document.createElement('span'); leftChip.className = 'tier-chip'; leftChip.textContent = tierText(row.leftTier); left.append(leftChip);
+      const right = document.createElement('td'); const rightChip = document.createElement('span'); rightChip.className = 'tier-chip'; rightChip.textContent = tierText(row.rightTier); right.append(rightChip);
+      tr.append(song, left, right); body.append(tr);
+    }
+    table.append(head, body); wrap.append(table); container.append(summary, wrap); container.hidden = false;
+  }
+  $('compare-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const leftFile = $('compare-left').files[0];
+    const rightFile = $('compare-right').files[0];
+    const error = $('compare-error');
+    error.hidden = true;
+    try {
+      if (!leftFile || !rightFile) throw new Error('Choose two exported JSON files.');
+      if (leftFile.size > MAX_BYTES || rightFile.size > MAX_BYTES) throw new Error('Each backup must be under 5 MB.');
+      const [left, right] = await Promise.all([leftFile.text(), rightFile.text()]);
+      const result = api.compareStates(JSON.parse(left), JSON.parse(right));
+      renderComparison(result, leftFile, rightFile);
+    } catch (caught) {
+      error.textContent = caught instanceof SyntaxError ? 'One of these files is not valid JSON.' : caught.message;
+      error.hidden = false;
+      $('comparison').hidden = true;
+    }
   });
   $('import').addEventListener('click', () => $('import-file').click());
   $('import-file').addEventListener('change', async () => {

@@ -25,6 +25,7 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     page.on('pageerror', error => errors.push(error.message));
     const url = `http://127.0.0.1:${server.address().port}/sws_tierlist/`;
     await page.goto(url);
+    await page.getByLabel('Tier list name').fill('Weekend ranking');
     await page.getByRole('button', { name: 'Add songs', exact: true }).click();
     await page.getByLabel('Song titles').fill('First track\nSecond track\nThird track');
     await page.getByLabel('Album or release').fill('Test album');
@@ -40,6 +41,8 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     await page.getByRole('button', { name: 'Export JSON' }).click();
     const download = await downloadPromise;
     const exported = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
+    assert.equal(exported.name, 'Weekend ranking');
+    assert.match(download.suggestedFilename(), /^weekend-ranking-/);
     assert.deepEqual(exported.tiers.S, [firstId]);
     await page.locator('#pool .song').filter({ hasText: 'Second track' }).click();
     await page.locator('[data-tier="S"] .tier-label').click();

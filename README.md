@@ -8,6 +8,8 @@ The site starts with 104 verified Sleeping With Sirens songs. Click **Add songs*
 
 Drag songs into S, A, B, C, D, or F. Dropping on another song inserts before it; dropping on a tier's empty space appends. You can also select a song, then choose a tier label. Select a ranked song and choose the library heading to return it to the unranked list.
 
+Name a tier list before exporting it to store that name in the JSON backup and its filename. Use **Compare lists** to load two exported backups and review which songs stayed in the same tier, moved, or appear in only one list.
+
 Search titles, album names, or recording types. Album and search filters affect the unranked pool only, so the ranking board stays visible.
 
 ## Saving and backups
