@@ -80,28 +80,7 @@
       else card?.focus({ preventScroll: true });
     }
   }
-  function makeButton(name, direction, disabled, handler) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'order-button';
-    button.setAttribute('aria-label', name);
-    button.title = name;
-    button.disabled = disabled;
-    button.dataset.action = direction < 0 ? 'earlier' : 'later';
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 16 16');
-    svg.setAttribute('aria-hidden', 'true');
-    const line = document.createElementNS(svg.namespaceURI, 'path');
-    line.setAttribute('d', direction < 0 ? 'M10 3 5 8l5 5' : 'm6 3 5 5-5 5');
-    line.setAttribute('fill', 'none');
-    line.setAttribute('stroke', 'currentColor');
-    line.setAttribute('stroke-width', '1.6');
-    svg.append(line);
-    button.append(svg);
-    button.addEventListener('click', handler);
-    return button;
-  }
-  function songCard(song, tier, index) {
+  function songCard(song, tier) {
     const card = document.createElement('article');
     card.className = 'song';
     card.dataset.songId = song.id;
@@ -118,19 +97,7 @@
     const meta = document.createElement('p');
     meta.className = 'song-meta';
     meta.textContent = `${song.album} · ${song.type}`;
-    const controls = document.createElement('div');
-    controls.className = 'song-controls';
-    if (tier !== 'unranked') {
-      for (const direction of [-1, 1]) {
-        const action = direction < 0 ? 'earlier' : 'later';
-        const disabled = direction < 0 ? index === 0 : index === state.tiers[tier].length - 1;
-        controls.append(makeButton(`Move ${action}: ${song.title}`, direction, disabled, () => {
-          commit(api.moveSong(state, song.id, tier, index + direction), `${song.title} moved ${action}.`, song.id, action);
-        }));
-      }
-    }
     card.append(title, meta);
-    if (controls.childElementCount) card.append(controls);
     const toggleSelection = () => {
       selectedId = selectedId === song.id ? null : song.id;
       render();
@@ -230,7 +197,7 @@
       count.setAttribute('aria-label', `${state.tiers[tier].length} songs`);
       label.append(heading, description, count);
       const songs = document.createElement('div'); songs.className = 'tier-songs';
-      state.tiers[tier].forEach((id, index) => songs.append(songCard(byId.get(id), tier, index)));
+      state.tiers[tier].forEach(id => songs.append(songCard(byId.get(id), tier)));
       if (!state.tiers[tier].length) {
         const hint = document.createElement('p'); hint.className = 'empty-tier'; hint.textContent = 'Drop songs here'; songs.append(hint);
       }
@@ -259,7 +226,7 @@
       const song = byId.get(id);
       return (!album || song.album === album) && (!query || `${song.title} ${song.album} ${song.type}`.toLocaleLowerCase().includes(query));
     });
-    $('pool').replaceChildren(...ids.map(id => songCard(byId.get(id), 'unranked', state.tiers.unranked.indexOf(id))));
+    $('pool').replaceChildren(...ids.map(id => songCard(byId.get(id), 'unranked')));
     $('pool-count').textContent = `${ids.length}${query || album ? ' / ' + state.tiers.unranked.length : ''}`;
     $('pool-empty').hidden = ids.length > 0;
     if (!ids.length) {

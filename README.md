@@ -6,7 +6,7 @@ A static tier-list site with Sleeping With Sirens as its first provided list. Op
 
 The site starts with 104 verified Sleeping With Sirens songs. Click **Add songs** to add demos, guest appearances, or anything else you want to rank. Paste one title per line, then optionally give the batch an album name and recording type. The library supports up to 5,000 entries.
 
-Drag songs into S, A, B, C, D, or F. Dropping on another song inserts before it; dropping on a tier's empty space appends. You can also select a song, then choose a tier label. Earlier/later buttons reorder songs inside a tier. Select a ranked song and choose the library heading to return it to the unranked list.
+Drag songs into S, A, B, C, D, or F. Dropping on another song inserts before it; dropping on a tier's empty space appends. You can also select a song, then choose a tier label. Select a ranked song and choose the library heading to return it to the unranked list.
 
 Search titles, album names, or recording types. Album and search filters affect the unranked pool only, so the ranking board stays visible.
 

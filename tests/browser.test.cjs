@@ -44,8 +44,7 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     await page.locator('#pool .song').filter({ hasText: 'Second track' }).click();
     await page.locator('[data-tier="S"] .tier-label').click();
     const secondId = await page.locator('[data-tier="S"] .song').last().getAttribute('data-song-id');
-    await page.locator('[data-tier="S"] .song').last().getByRole('button', { name: /Move earlier/ }).click();
-    assert.equal(await page.locator('[data-tier="S"] .song').first().getAttribute('data-song-id'), secondId);
+    assert.equal(await page.locator('.song .order-button').count(), 0);
     const setFile = content => page.locator('#import-file').setInputFiles({ name: 'save.json', mimeType: 'application/json', buffer: Buffer.from(content) });
     page.once('dialog', dialog => dialog.dismiss());
     await setFile(saved);
