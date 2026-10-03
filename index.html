@@ -22,15 +22,17 @@
     </section>
     <section aria-labelledby="board-title">
       <div class="section-heading"><h2 id="board-title">Your ranking</h2></div>
-      <div class="toolbar"><div class="toolbar-group"><label class="sr-only" for="list-name">Tier list name</label><input id="list-name" class="list-name" maxlength="100" placeholder="Name this tier list"><button id="export" class="primary">Export JSON</button><button id="import">Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="compare-toggle">Compare lists</button><button id="add-toggle">Add songs</button></div><button id="reset" class="quiet">Reset rankings</button></div>
+      <div class="toolbar"><div class="toolbar-group"><label class="sr-only" for="list-name">Tier list name</label><input id="list-name" class="list-name" maxlength="100" placeholder="Name this tier list"><button id="export" class="primary">Export JSON</button><button id="import">Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="compare-toggle">Compare list</button><button id="compare-clear" class="quiet" hidden>Clear comparison</button><button id="add-toggle">Add songs</button></div><button id="reset" class="quiet">Reset rankings</button></div>
       <p id="message" class="message" role="status" hidden></p>
       <div id="recovery" class="recovery" hidden><p>Some previous save data could not be read. The full song library has been restored, along with any rankings that could be recovered.</p><button id="download-old">Download previous save</button><button id="replace-old">Dismiss</button></div>
-      <form id="compare-form" class="compare-panel" hidden>
-        <div class="form-heading"><h3>Compare saved tier lists</h3><button id="compare-close" type="button" class="quiet">Close</button></div>
-        <div class="compare-inputs"><label>First list<input id="compare-left" type="file" accept=".json,application/json" required></label><label>Second list<input id="compare-right" type="file" accept=".json,application/json" required></label></div>
-        <p id="compare-error" role="alert" class="form-error" hidden></p><button type="submit" class="primary">Compare</button>
-        <div id="comparison" class="comparison" hidden></div>
-      </form>
+      <dialog id="compare-dialog" class="compare-dialog">
+        <form id="compare-form">
+          <div class="form-heading"><div><h3>Compare with a saved list</h3><p>Your current tier list will stay open.</p></div><button id="compare-close" type="button" class="quiet">Close</button></div>
+          <label for="compare-file">Saved tier list</label><input id="compare-file" type="file" accept=".json,application/json" required>
+          <p id="compare-error" role="alert" class="form-error" hidden></p>
+          <button type="submit" class="primary">Show comparison</button>
+        </form>
+      </dialog>
       <form id="add-form" class="add-form" hidden>
         <div class="form-heading"><h3>Add to your library</h3><button id="add-close" type="button" class="quiet">Close</button></div>
         <p>Paste one song title per line. Add an album at a time, or paste your whole list.</p>

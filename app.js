@@ -12,6 +12,8 @@
   let dragId = null;
   let selectedId = null;
   let importBusy = false;
+  let comparison = null;
+  const tierRank = { unranked: 0, F: 1, D: 2, C: 3, B: 4, A: 5, S: 6 };
 
   function announce(text, error = false) {
     $('message').textContent = text;
@@ -98,6 +100,24 @@
     meta.className = 'song-meta';
     meta.textContent = `${song.album} · ${song.type}`;
     card.append(title, meta);
+    if (comparison) {
+      const comparedTier = comparison.placements.get(song.id);
+      const badge = document.createElement('span');
+      badge.className = 'compare-badge';
+      if (!comparedTier) {
+        badge.textContent = '— Not included';
+        badge.setAttribute('aria-label', `${song.title} is not included in ${comparison.name}`);
+      } else {
+        const direction = Math.sign(tierRank[comparedTier] - tierRank[tier]);
+        const symbol = direction > 0 ? '↑' : direction < 0 ? '↓' : '=';
+        const word = direction > 0 ? 'higher' : direction < 0 ? 'lower' : 'the same';
+        if (direction > 0) badge.classList.add('up');
+        if (direction < 0) badge.classList.add('down');
+        badge.textContent = `${symbol} ${comparedTier === 'unranked' ? 'Unranked' : comparedTier}`;
+        badge.setAttribute('aria-label', `${comparison.name} placed ${song.title} ${word}, in ${comparedTier === 'unranked' ? 'unranked' : comparedTier + ' tier'}`);
+      }
+      card.append(badge);
+    }
     const toggleSelection = () => {
       selectedId = selectedId === song.id ? null : song.id;
       render();
@@ -289,57 +309,42 @@
     download(JSON.stringify(save), `${base}-${new Date().toISOString().slice(0, 10)}.json`);
     announce(`${save.name || 'Tier list'} exported.`);
   });
-  function openCompare() { $('compare-form').hidden = false; $('compare-left').focus(); }
+  function openCompare() {
+    $('compare-error').hidden = true;
+    $('compare-dialog').showModal();
+    $('compare-file').focus();
+  }
   $('compare-toggle').addEventListener('click', openCompare);
   $('compare-close').addEventListener('click', () => {
-    $('compare-form').hidden = true;
+    $('compare-dialog').close();
     $('compare-toggle').focus();
   });
-  function tierText(tier) { return tier === 'unranked' ? 'Unranked' : tier || 'Not included'; }
-  function renderComparison(result, leftFile, rightFile) {
-    const leftName = result.leftName === 'List 1' ? leftFile.name.replace(/\.json$/i, '') : result.leftName;
-    const rightName = result.rightName === 'List 2' ? rightFile.name.replace(/\.json$/i, '') : result.rightName;
-    const container = $('comparison');
-    container.replaceChildren();
-    const summary = document.createElement('div');
-    summary.className = 'comparison-summary';
-    for (const text of [`${result.summary.moved} moved`, `${result.summary.same} unchanged`, `${result.summary.leftOnly} only in ${leftName}`, `${result.summary.rightOnly} only in ${rightName}`]) {
-      const item = document.createElement('span'); item.textContent = text; summary.append(item);
-    }
-    const wrap = document.createElement('div'); wrap.className = 'comparison-table-wrap';
-    const table = document.createElement('table');
-    const head = document.createElement('thead');
-    const header = document.createElement('tr');
-    for (const text of ['Song', leftName, rightName]) { const th = document.createElement('th'); th.textContent = text; header.append(th); }
-    head.append(header);
-    const body = document.createElement('tbody');
-    for (const row of result.rows) {
-      const tr = document.createElement('tr');
-      if (row.status !== 'same') tr.className = 'changed';
-      const song = document.createElement('td'); song.textContent = row.title;
-      const left = document.createElement('td'); const leftChip = document.createElement('span'); leftChip.className = 'tier-chip'; leftChip.textContent = tierText(row.leftTier); left.append(leftChip);
-      const right = document.createElement('td'); const rightChip = document.createElement('span'); rightChip.className = 'tier-chip'; rightChip.textContent = tierText(row.rightTier); right.append(rightChip);
-      tr.append(song, left, right); body.append(tr);
-    }
-    table.append(head, body); wrap.append(table); container.append(summary, wrap); container.hidden = false;
-  }
   $('compare-form').addEventListener('submit', async event => {
     event.preventDefault();
-    const leftFile = $('compare-left').files[0];
-    const rightFile = $('compare-right').files[0];
+    const file = $('compare-file').files[0];
     const error = $('compare-error');
     error.hidden = true;
     try {
-      if (!leftFile || !rightFile) throw new Error('Choose two exported JSON files.');
-      if (leftFile.size > MAX_BYTES || rightFile.size > MAX_BYTES) throw new Error('Each backup must be under 5 MB.');
-      const [left, right] = await Promise.all([leftFile.text(), rightFile.text()]);
-      const result = api.compareStates(JSON.parse(left), JSON.parse(right));
-      renderComparison(result, leftFile, rightFile);
+      if (!file) throw new Error('Choose an exported JSON file.');
+      if (file.size > MAX_BYTES) throw new Error('The backup must be under 5 MB.');
+      const saved = api.validateState(JSON.parse(await file.text()));
+      const placements = new Map(api.tiers.flatMap(tier => saved.tiers[tier].map(id => [id, tier])));
+      comparison = { name: saved.name || file.name.replace(/\.json$/i, ''), placements };
+      $('compare-dialog').close();
+      $('compare-clear').hidden = false;
+      render();
+      announce(`Comparing with ${comparison.name}.`);
     } catch (caught) {
-      error.textContent = caught instanceof SyntaxError ? 'One of these files is not valid JSON.' : caught.message;
+      error.textContent = caught instanceof SyntaxError ? 'This file is not valid JSON.' : caught.message;
       error.hidden = false;
-      $('comparison').hidden = true;
     }
+  });
+  $('compare-clear').addEventListener('click', () => {
+    comparison = null;
+    $('compare-clear').hidden = true;
+    $('compare-file').value = '';
+    render();
+    announce('Comparison cleared.');
   });
   $('import').addEventListener('click', () => $('import-file').click());
   $('import-file').addEventListener('change', async () => {

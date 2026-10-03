@@ -48,6 +48,12 @@ test('ranking persists; backups restore safely; mobile and keyboard controls wor
     await page.locator('[data-tier="S"] .tier-label').click();
     const secondId = await page.locator('[data-tier="S"] .song').last().getAttribute('data-song-id');
     assert.equal(await page.locator('.song .order-button').count(), 0);
+    await page.getByRole('button', { name: 'Compare list', exact: true }).click();
+    await page.getByLabel('Saved tier list').setInputFiles({ name: 'earlier.json', mimeType: 'application/json', buffer: Buffer.from(saved) });
+    await page.getByRole('button', { name: 'Show comparison' }).click();
+    await page.locator(`[data-song-id="${secondId}"]`).first().getByText('↓ Unranked').waitFor();
+    await page.getByRole('button', { name: 'Clear comparison' }).click();
+    assert.equal(await page.locator('.compare-badge').count(), 0);
     const setFile = content => page.locator('#import-file').setInputFiles({ name: 'save.json', mimeType: 'application/json', buffer: Buffer.from(content) });
     page.once('dialog', dialog => dialog.dismiss());
     await setFile(saved);
