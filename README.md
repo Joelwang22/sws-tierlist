@@ -4,9 +4,9 @@ A static personal tier list. Open `index.html` to start, or host it on GitHub Pa
 
 ## Add and rank songs
 
-The site starts with 134 verified Sleeping With Sirens recordings. Click **Add songs** to add demos, guest appearances, or anything else you want to rank. Paste one title per line, then optionally give the batch an album name and recording type. The library supports up to 5,000 entries.
+The site starts with 104 verified Sleeping With Sirens songs. Click **Add songs** to add demos, guest appearances, or anything else you want to rank. Paste one title per line, then optionally give the batch an album name and recording type. The library supports up to 5,000 entries.
 
-Drag songs into S, A, B, C, D, or F. Dropping on another song inserts before it; dropping on a tier's empty space appends. Use the tier dropdown on each song for touch and keyboard ranking. Earlier/later buttons reorder songs inside a tier. Select **Unranked** to return a song to the library.
+Drag songs into S, A, B, C, D, or F. Dropping on another song inserts before it; dropping on a tier's empty space appends. You can also select a song, then choose a tier label. Earlier/later buttons reorder songs inside a tier. Select a ranked song and choose the library heading to return it to the unranked list.
 
 Search titles, album names, or recording types. Album and search filters affect the unranked pool only, so the ranking board stays visible.
 
@@ -35,7 +35,7 @@ All asset paths are relative, so repository URLs such as `https://yourname.githu
 
 ## Catalog coverage
 
-The built-in catalog covers the band's eight studio albums through *An Ending In Itself*, deluxe-only tracks, the 2012 acoustic EP, *Live and Unplugged*, *Live & Acoustic from NYC*, the Audiotree and Apple Music Radio sessions, and the officially released non-album singles through September 2026. Alternate acoustic and live recordings appear as separate items so you can rank the recording you heard.
+The built-in catalog covers the band's eight studio albums through *An Ending In Itself*, deluxe-only songs, the 2012 acoustic EP, live-only covers, and the officially released non-album singles through September 2026. Each song appears once. Live and acoustic versions are omitted when the same song has a studio release.
 
 The catalog was checked on October 3, 2026 against the [band's website](https://sirensmusic.co/), [Apple Music artist releases](https://music.apple.com/us/artist/sleeping-with-sirens/360773035), [MusicBrainz](https://musicbrainz.org/artist/3267d5a3-c72c-4c3b-bafe-ec8a569c0b74), and the [label track list for Complete Collapse Deluxe](https://sumerianrecords.bandcamp.com/album/complete-collapse-deluxe). Unreleased demos and songs credited only to Kellin Quinn as a guest are outside the catalog. One explicit-titled compilation cover could not be preloaded because the catalog-writing step was blocked by a content filter; the Add songs form remains available for personal additions.
 

@@ -9,6 +9,7 @@
   let protectedSave = null;
   let storageAvailable = true;
   let dragId = null;
+  let selectedId = null;
   let importBusy = false;
 
   function announce(text, error = false) {
@@ -17,15 +18,17 @@
     $('message').hidden = false;
   }
   function saveStatus(text, warning) {
-    $('save-status').textContent = text;
-    $('save-status').parentElement.classList.toggle('warning', warning);
+    const status = $('save-status');
+    if (!status) return;
+    status.textContent = text;
+    status.parentElement.classList.toggle('warning', warning);
   }
   function persist() {
     if (protectedSave !== null) { saveStatus('Autosave paused. Export a backup.', true); return; }
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
       storageAvailable = true;
-      saveStatus('Saved in this browser', false);
+      saveStatus('Saved', false);
     } catch {
       storageAvailable = false;
       saveStatus('Browser saving unavailable. Export JSON.', true);
@@ -38,7 +41,7 @@
     if (raw === null) { saveStatus('Autosave ready', false); return; }
     try {
       const previous = api.validateState(JSON.parse(raw));
-      state = api.mergeCatalog(previous, SWS.catalog);
+      state = api.mergeCatalog(previous, SWS.catalog, SWS.retiredCatalogIds);
       persist();
     } catch {
       protectedSave = raw;
@@ -65,7 +68,7 @@
       const card = [...document.querySelectorAll('.song')].find(el => el.dataset.songId === focusId);
       const control = card?.querySelector(`[data-action="${action}"]`);
       if (control && !control.disabled) control.focus({ preventScroll: true });
-      else card?.querySelector('select')?.focus({ preventScroll: true });
+      else card?.focus({ preventScroll: true });
     }
   }
   function makeButton(name, direction, disabled, handler) {
@@ -94,6 +97,12 @@
     card.className = 'song';
     card.dataset.songId = song.id;
     card.draggable = true;
+    card.tabIndex = 0;
+    card.setAttribute('aria-label', `${song.title}, ${song.album}. Select to move.`);
+    if (selectedId === song.id) {
+      card.classList.add('selected');
+      card.setAttribute('aria-current', 'true');
+    }
     const title = document.createElement('h4');
     title.className = 'song-title';
     title.textContent = song.title;
@@ -102,21 +111,6 @@
     meta.textContent = `${song.album} · ${song.type}`;
     const controls = document.createElement('div');
     controls.className = 'song-controls';
-    const select = document.createElement('select');
-    select.setAttribute('aria-label', `Tier for ${song.title}`);
-    select.dataset.action = 'tier';
-    for (const name of ['unranked', ...api.tiers.filter(t => t !== 'unranked')]) {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name === 'unranked' ? 'Unranked' : `${name} tier`;
-      select.append(option);
-    }
-    select.value = tier;
-    select.addEventListener('change', () => {
-      if (select.value === tier) return;
-      commit(api.moveSong(state, song.id, select.value), `${song.title} moved to ${select.value === 'unranked' ? 'unranked' : select.value + ' tier'}.`, song.id);
-    });
-    controls.append(select);
     if (tier !== 'unranked') {
       for (const direction of [-1, 1]) {
         const action = direction < 0 ? 'earlier' : 'later';
@@ -126,9 +120,25 @@
         }));
       }
     }
-    card.append(title, meta, controls);
+    card.append(title, meta);
+    if (controls.childElementCount) card.append(controls);
+    const toggleSelection = () => {
+      selectedId = selectedId === song.id ? null : song.id;
+      render();
+      document.querySelector(`.song[data-song-id="${CSS.escape(song.id)}"]`)?.focus({ preventScroll: true });
+      announce(selectedId ? `${song.title} selected. Choose a tier.` : `${song.title} unselected.`);
+    };
+    card.addEventListener('click', event => {
+      if (!event.target.closest('button')) toggleSelection();
+    });
+    card.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' || event.key === ' ') && event.target === card) {
+        event.preventDefault();
+        toggleSelection();
+      }
+    });
     card.addEventListener('dragstart', event => {
-      if (event.target.closest('select, button')) { event.preventDefault(); return; }
+      if (event.target.closest('button')) { event.preventDefault(); return; }
       dragId = song.id;
       event.dataTransfer.setData('text/plain', song.id);
       event.dataTransfer.effectAllowed = 'move';
@@ -176,7 +186,24 @@
       clearDropStyles();
     });
   }
+  function selectionTarget(element, tier) {
+    element.tabIndex = 0;
+    element.setAttribute('aria-label', tier === 'unranked' ? 'Move selected song to unranked' : `Move selected song to ${tier} tier`);
+    const moveSelected = event => {
+      if (!selectedId || event.target.closest('.song, button, input, select, textarea')) return;
+      const song = state.songs.find(item => item.id === selectedId);
+      if (!song) return;
+      event.preventDefault();
+      selectedId = null;
+      commit(api.moveSong(state, song.id, tier), `${song.title} moved to ${tier === 'unranked' ? 'unranked' : tier + ' tier'}.`, song.id);
+    };
+    element.addEventListener('click', moveSelected);
+    element.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' || event.key === ' ') && event.target === element) moveSelected(event);
+    });
+  }
   function render() {
+    if (selectedId && !state.songs.some(song => song.id === selectedId)) selectedId = null;
     const byId = new Map(state.songs.map(s => [s.id, s]));
     const board = $('board');
     board.replaceChildren();
@@ -200,6 +227,7 @@
       }
       row.append(label, songs);
       dropTarget(row, tier);
+      selectionTarget(row, tier);
       board.append(row);
     }
     const previousAlbum = $('album').value;
@@ -277,7 +305,7 @@
     $('import').disabled = true;
     try {
       if (file.size > MAX_BYTES) throw new Error('That file is too large. Choose a JSON backup under 5 MB.');
-      const imported = api.mergeCatalog(api.validateState(JSON.parse(await file.text())), SWS.catalog);
+      const imported = api.mergeCatalog(api.validateState(JSON.parse(await file.text())), SWS.catalog, SWS.retiredCatalogIds);
       if (!confirm(`Replace your current list with this backup of ${imported.songs.length} songs? Export first if you want to keep your current list.`)) return;
       protectedSave = null;
       $('recovery').hidden = true;
@@ -303,6 +331,7 @@
   $('album').addEventListener('change', () => renderPool());
   $('clear-filters').addEventListener('click', () => { $('search').value = ''; $('album').value = ''; renderPool(); });
   dropTarget($('library'), 'unranked');
+  selectionTarget($('library'), 'unranked');
   restore();
   render();
 })();

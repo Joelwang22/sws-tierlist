@@ -69,9 +69,9 @@
     ['lau-05', 'Free Now (Live)', 'Live and Unplugged', 2016, 'live'],
     ['lau-06', 'Who Are You Now (Live)', 'Live and Unplugged', 2016, 'live'],
     ['lau-07', 'Go Go Go (Live)', 'Live and Unplugged', 2016, 'live'],
-    ['lau-08', 'Santeria (Live)', 'Live and Unplugged', 2016, 'live'],
+    ['lau-08', 'Santeria', 'Live and Unplugged', 2016, 'cover'],
     ['lau-09', 'Save Me a Spark (Live)', 'Live and Unplugged', 2016, 'live'],
-    ['lau-10', 'Iris (Live)', 'Live and Unplugged', 2016, 'live'],
+    ['lau-10', 'Iris', 'Live and Unplugged', 2016, 'cover'],
     ['lau-11', "If You Can't Hang (Live)", 'Live and Unplugged', 2016, 'live'],
 
     ['gossip-01', 'Gossip', 'Gossip', 2017, 'studio'],
@@ -149,7 +149,20 @@
     ['big-gulps-02', "I'm Coming Home (Big Gulps) [Original Version]", "I'm Coming Home (Big Gulps)", 2026, 'single']
   ];
 
-  root.SWS.catalog = rows.map(([id, title, album, year, type]) => ({ id, title, album, year, type }));
+  root.SWS.retiredCatalogIds = [
+    'movie-01', 'movie-05',
+    'lau-01', 'lau-02', 'lau-03', 'lau-04', 'lau-05', 'lau-06', 'lau-07', 'lau-09', 'lau-11',
+    'nyc-01', 'nyc-02', 'nyc-03',
+    'lost-13', 'lost-14', 'lost-15',
+    'collapse-13', 'collapse-14', 'collapse-16', 'collapse-17',
+    'audiotree-01', 'audiotree-02', 'audiotree-03', 'audiotree-04', 'audiotree-05',
+    'apple-live-01', 'apple-live-02', 'apple-live-03',
+    'big-gulps-02'
+  ];
+  const retired = new Set(root.SWS.retiredCatalogIds);
+  root.SWS.catalog = rows
+    .filter(([id]) => !retired.has(id))
+    .map(([id, title, album, year, type]) => ({ id, title, album, year, type }));
   root.SWS.sources = [
     'https://sirensmusic.co/',
     'https://music.apple.com/us/artist/sleeping-with-sirens/360773035',

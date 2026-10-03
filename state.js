@@ -62,9 +62,14 @@
     next.tiers.unranked.push(song.id);
     return validateState(next);
   }
-  function mergeCatalog(save, catalog) {
+  function mergeCatalog(save, catalog, retiredIds = []) {
     let next = validateState(save);
     const verified = createState(catalog);
+    const retired = new Set(retiredIds);
+    if (retired.size) {
+      next.songs = next.songs.filter(song => !retired.has(song.id));
+      for (const tier of tiers) next.tiers[tier] = next.tiers[tier].filter(id => !retired.has(id));
+    }
     const ids = new Set(next.songs.map(s => s.id));
     for (const song of verified.songs) if (!ids.has(song.id)) {
       next.songs.push(song);

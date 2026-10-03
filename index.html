@@ -18,11 +18,11 @@
   </header>
   <main>
     <section class="intro" aria-labelledby="page-title">
-      <div><h1 id="page-title">Sleeping<br>With Sirens<span class="title-dot">.</span></h1><p class="subtitle">Every listen. Your own verdict.</p></div>
-      <div class="intro-aside"><p>Work through the songs.<br>Find the ones that stay with you.</p><div id="progress-text">0 of 0 songs ranked</div><progress id="progress" value="0" max="1" aria-label="Songs ranked"></progress></div>
+      <div><h1 id="page-title">Sleeping<br>With Sirens<span class="title-dot">.</span></h1></div>
+      <div class="intro-aside"><div id="progress-text">0 of 0 songs ranked</div><progress id="progress" value="0" max="1" aria-label="Songs ranked"></progress></div>
     </section>
     <section aria-labelledby="board-title">
-      <div class="section-heading"><div><h2 id="board-title">Your ranking</h2><p>Drag songs into a tier, or use their tier selector.</p></div><div class="save-indicator"><span class="status-dot" aria-hidden="true"></span><span id="save-status" role="status">Ready to save</span></div></div>
+      <div class="section-heading"><h2 id="board-title">Your ranking</h2></div>
       <div class="toolbar"><div class="toolbar-group"><button id="export" class="primary">Export JSON</button><button id="import">Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="add-toggle">Add songs</button></div><button id="reset" class="quiet">Reset rankings</button></div>
       <p id="message" class="message" role="status" hidden></p>
       <div id="recovery" class="recovery" hidden><p>The previous browser save is unreadable. Autosave is paused to protect it. Export your current list first if you want to keep it.</p><button id="download-old">Download previous save</button><button id="replace-old">Replace previous save</button></div>
@@ -34,7 +34,6 @@
         <p id="add-error" role="alert" class="form-error" hidden></p><button type="submit" class="primary">Save songs</button>
       </form>
       <div id="board" class="board" aria-label="Ranked songs"></div>
-      <p class="storage-note">Progress saves in this browser. Export a JSON backup to keep it safe or move to another device.</p>
     </section>
     <section id="library" aria-labelledby="library-title">
       <div class="section-heading"><div class="library-heading"><h2 id="library-title">Waiting for a listen</h2><span id="pool-count" class="count">0</span></div><span class="library-note">Your unranked song library</span></div>
@@ -43,7 +42,6 @@
       <p id="pool-empty" class="pool-empty"></p>
     </section>
   </main>
-  <footer><span>Made for the listening journey.</span><span>A personal fan project. No audio hosted.</span></footer>
   <noscript><p>This tier list needs JavaScript enabled to rank and save songs.</p></noscript>
 </body>
 </html>
